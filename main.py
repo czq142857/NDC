@@ -68,14 +68,6 @@ if not os.path.exists(FLAGS.sample_dir):
     os.makedirs(FLAGS.sample_dir)
 
 
-#Create train/test dataset
-dataset_train = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=True, input_type=FLAGS.input_type, out_bool=dataset_bool, out_float=dataset_float)
-dataset_test = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=False, input_type=FLAGS.input_type, out_bool=True, out_float=True)
-dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, shuffle=True, num_workers=16) #batch_size must be 1
-dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=16)  #batch_size must be 1
-
-
-
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
@@ -102,6 +94,12 @@ if net_float:
 
 
 if is_training:
+    #Create train/test dataset
+    dataset_train = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=True, input_type=FLAGS.input_type, out_bool=dataset_bool, out_float=dataset_float)
+    dataset_test = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=False, input_type=FLAGS.input_type, out_bool=True, out_float=True)
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, shuffle=True, num_workers=16) #batch_size must be 1
+    dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=16)  #batch_size must be 1
+
 
     networks = []
     optimizers = []
@@ -250,6 +248,7 @@ if is_training:
                         pred_output_float_numpy = np.transpose(pred_output_float[j].detach().cpu().numpy(), [1,2,3,0])
                     else:
                         pred_output_float_numpy = np.transpose(gt_output_float_[j].detach().cpu().numpy(), [1,2,3,0])
+                    pred_output_float_numpy = np.clip(pred_output_float_numpy,0,1)
                     vertices, triangles = utils.dual_contouring_ndc_test(pred_output_bool_numpy, pred_output_float_numpy)
                     utils.write_obj_triangle(FLAGS.sample_dir+"/test_"+str(counter)+".obj", vertices, triangles)
                     counter += 1
@@ -257,6 +256,16 @@ if is_training:
 
 
 elif is_testing:
+    import cutils
+
+    #Create test dataset
+    if dataset_bool and dataset_float: #only read input
+        dataset_test = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=False, input_type=FLAGS.input_type, out_bool=True, out_float=True, input_only=True)
+        dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=16)  #batch_size must be 1
+    else:
+        dataset_test = dataset.ABC_ndc_hdf5(FLAGS.data_dir, train=False, input_type=FLAGS.input_type, out_bool=True, out_float=True)
+        dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=16)  #batch_size must be 1
+
 
     #load weights
     print('loading net...')
@@ -312,8 +321,9 @@ elif is_testing:
                 pred_output_float_numpy = np.transpose(pred_output_float[j].detach().cpu().numpy(), [1,2,3,0])
             else:
                 pred_output_float_numpy = np.transpose(gt_output_float_[j].detach().cpu().numpy(), [1,2,3,0])
-            vertices, triangles = utils.dual_contouring_ndc_test(np.ascontiguousarray(pred_output_bool_numpy, np.int32), np.ascontiguousarray(pred_output_float_numpy, np.float32))
-            #vertices, triangles = cutils.dual_contouring_ndc(np.ascontiguousarray(pred_output_bool_numpy, np.int32), np.ascontiguousarray(pred_output_float_numpy, np.float32))
+            pred_output_float_numpy = np.clip(pred_output_float_numpy,0,1)
+            #vertices, triangles = utils.dual_contouring_ndc_test(pred_output_bool_numpy, pred_output_float_numpy)
+            vertices, triangles = cutils.dual_contouring_ndc(np.ascontiguousarray(pred_output_bool_numpy, np.int32), np.ascontiguousarray(pred_output_float_numpy, np.float32))
             utils.write_obj_triangle(FLAGS.sample_dir+"/test_"+str(counter)+".obj", vertices, triangles)
             counter += 1
         #if counter>=32: break

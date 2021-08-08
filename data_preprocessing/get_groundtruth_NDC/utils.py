@@ -24,7 +24,6 @@ def dual_contouring_47_test(int_grid, float_grid):
                 v6 = int_grid[i+1,j+1,k+1]
                 v7 = int_grid[i,j+1,k+1]
                 
-                color = v0
                 if v1!=v0 or v2!=v0 or v3!=v0 or v4!=v0 or v5!=v0 or v6!=v0 or v7!=v0:
                     #add a vertex
                     vertices_grid[i,j,k] = len(all_vertices)

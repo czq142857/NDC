@@ -9,16 +9,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from utils import read_data,read_and_augment_data,read_data_bool_only
+from utils import read_data,read_and_augment_data,read_data_input_only
 
 
 class ABC_ndc_hdf5(torch.utils.data.Dataset):
-    def __init__(self, data_dir, train, input_type, out_bool, out_float):
+    def __init__(self, data_dir, train, input_type, out_bool, out_float, input_only=False):
         self.data_dir = data_dir
         self.train = train
         self.input_type = input_type
         self.out_bool = out_bool
         self.out_float = out_float
+        self.input_only = input_only
         
         self.hdf5_names = os.listdir(self.data_dir)
         self.hdf5_names = [name for name in self.hdf5_names if name[-5:]==".hdf5"]
@@ -66,21 +67,29 @@ class ABC_ndc_hdf5(torch.utils.data.Dataset):
         grid_size = self.hdf5_gridsizes[index]
 
         if self.train:
-            gt_output_bool_,gt_output_float_,gt_input_ = read_and_augment_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float,aug_permutation=True,aug_reversal=True,aug_inversion=True)
+            if self.input_type=="voxel" and self.out_bool:
+                gt_output_bool_,gt_output_float_,gt_input_ = read_and_augment_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float,aug_permutation=True,aug_reversal=True,aug_inversion=False)
+            else:
+                gt_output_bool_,gt_output_float_,gt_input_ = read_and_augment_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float,aug_permutation=True,aug_reversal=True,aug_inversion=True)
         else:
-            gt_output_bool_,gt_output_float_,gt_input_ = read_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float)
+            if self.input_only:
+                gt_output_bool_,gt_output_float_,gt_input_ = read_data_input_only(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float)
+            else:
+                gt_output_bool_,gt_output_float_,gt_input_ = read_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float)
+
 
         if self.out_bool:
             gt_output_bool_ = np.transpose(gt_output_bool_, [3,0,1,2]).astype(np.float32)
             gt_output_bool_mask_ = np.zeros(gt_output_bool_.shape, np.float32)
             if self.input_type=="voxel":
                 tmp_mask = np.zeros([grid_size-1,grid_size-1,grid_size-1], np.uint8)
-                gt_input_inv = (gt_input_==0)
+                gt_input_pos = (gt_input_!=gt_input_[0,0,0])
+                gt_input_neg = (gt_input_==gt_input_[0,0,0])
                 for i in [-1,0,1]:
                     for j in [-1,0,1]:
                         for k in [-1,0,1]:
-                            tmp_mask = tmp_mask | gt_input_inv[1+i:grid_size+i,1+j:grid_size+j,1+k:grid_size+k]
-                tmp_mask = tmp_mask & gt_input_[1:-1,1:-1,1:-1]
+                            tmp_mask = tmp_mask | gt_input_neg[1+i:grid_size+i,1+j:grid_size+j,1+k:grid_size+k]
+                tmp_mask = tmp_mask & gt_input_pos[1:-1,1:-1,1:-1]
                 for i in [0,1]:
                     for j in [0,1]:
                         for k in [0,1]:
@@ -195,7 +204,17 @@ class ABC_ndc_hdf5(torch.utils.data.Dataset):
 
         gt_input[:,xmin_pad:xmax_pad,ymin_pad:ymax_pad,zmin_pad:zmax_pad] = gt_input_[:,xmin:xmax,ymin:ymax,zmin:zmax]
 
+
+        #the current code assumes that each cell in the input is a unit cube
+        #clip to ignore far-away cells
         gt_input = np.clip(gt_input, -2, 2)
+
+        # #if you want to relax the unit-cube assumption, comment out the above clipping code, and uncomment the following code
+        # if self.train and self.input_type=="sdf":
+        #     if np.random.randint(2)==0:
+        #         gt_input = gt_input * (np.random.random()*2+0.001)
+        #     else:
+        #         gt_input = gt_input * 10**(-np.random.random()*3)
 
 
         if self.out_bool and self.out_float:

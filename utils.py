@@ -183,17 +183,15 @@ def read_and_augment_data(hdf5_dir,grid_size,input_type,out_bool,out_float,aug_p
 
     if input_type=="sdf":
         LOD_input = np.ones([grid_size_1,grid_size_1,grid_size_1], np.float32)
+        LOD_input[:,:,:] = newdict['input_sdf']
         if inversion_flag:
-            LOD_input[:,:,:] = -newdict['input_sdf']
-        else:
-            LOD_input[:,:,:] = newdict['input_sdf']
+            LOD_input = -LOD_input
 
     elif input_type=="voxel":
         LOD_input = np.zeros([grid_size_1,grid_size_1,grid_size_1], np.uint8)
+        LOD_input[:-1,:-1,:-1] = newdict['input_voxel']
         if inversion_flag:
-            LOD_input[:-1,:-1,:-1] = 1-newdict['input_voxel']
-        else:
-            LOD_input[:-1,:-1,:-1] = newdict['input_voxel']
+            LOD_input = 1-LOD_input
 
     return LOD_gt_int, LOD_gt_float, LOD_input
 
@@ -222,7 +220,6 @@ def dual_contouring_ndc_test(int_grid, float_grid):
                 v6 = int_grid[i+1,j+1,k+1]
                 v7 = int_grid[i,j+1,k+1]
                 
-                color = v0
                 if v1!=v0 or v2!=v0 or v3!=v0 or v4!=v0 or v5!=v0 or v6!=v0 or v7!=v0:
                     #add a vertex
                     vertices_grid[i,j,k] = len(all_vertices)
