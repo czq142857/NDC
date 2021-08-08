@@ -7,6 +7,7 @@ PyTorch implementation of Neural Dual Contouring.
 ## Citation
 We are still writing the paper while adding more improvements and applications.
 If you find our work useful in your research, please consider citing our prior work [Neural Marching Cubes (NMC)](https://github.com/czq142857/NMC).
+
 	@article{chen2021nmc,
 	  title={Neural Marching Cubes},
 	  author={Zhiqin Chen and Hao Zhang},
