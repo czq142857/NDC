@@ -52,7 +52,7 @@ python main.py --train_float --epoch 400 --data_dir groundtruth/gt_NDC --input_t
 python main.py --test_bool_float --data_dir groundtruth/gt_NDC --input_type sdf
 ```
 
-To train/test NDC with SDF input:
+To train/test NDC with voxel input:
 ```
 python main.py --train_bool --epoch 400 --data_dir groundtruth/gt_NDC --input_type voxel
 python main.py --train_float --epoch 400 --data_dir groundtruth/gt_NDC --input_type voxel
