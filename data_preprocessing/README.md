@@ -3,7 +3,7 @@ Tools for pre-processing raw mesh data and converting them to the representation
 
 ## Requirements
 - Ubuntu
-- Python 3 with numpy, h5py and Cython
+- Python 3 with numpy, h5py, scipy and Cython
 
 Build Cython module in each subfolder:
 ```

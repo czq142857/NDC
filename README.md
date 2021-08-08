@@ -19,7 +19,7 @@ If you find our work useful in your research, please consider citing our prior w
 
 
 ## Requirements
-- Python 3 with numpy, h5py, scipy, sklearn and Cython
+- Python 3 with numpy, h5py, scipy and Cython
 - [PyTorch 1.8](https://pytorch.org/get-started/locally/) (other versions may also work)
 
 Build Cython module:
