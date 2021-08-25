@@ -26,7 +26,7 @@ We use the same training shapes as those in [NMC](https://github.com/czq142857/N
 The shapes used in our experiments are recorded in *abc_obj_list.txt* and *thingi10k_obj_list.txt*.
 
 
-## Executable files IntersectionXYZpn
+## Executable files IntersectionXYZpn, SDFGen, and VOXGen
 
 See [data_utils](https://github.com/czq142857/NMC/tree/master/data_utils) from [NMC](https://github.com/czq142857/NMC).
 
