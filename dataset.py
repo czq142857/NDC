@@ -67,7 +67,7 @@ class ABC_ndc_hdf5(torch.utils.data.Dataset):
         grid_size = self.hdf5_gridsizes[index]
 
         if self.train:
-            if self.input_type=="voxel" and self.out_bool:
+            if self.input_type=="voxel":
                 gt_output_bool_,gt_output_float_,gt_input_ = read_and_augment_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float,aug_permutation=True,aug_reversal=True,aug_inversion=False)
             else:
                 gt_output_bool_,gt_output_float_,gt_input_ = read_and_augment_data(hdf5_dir,grid_size,self.input_type,self.out_bool,self.out_float,aug_permutation=True,aug_reversal=True,aug_inversion=True)
