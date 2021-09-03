@@ -7,8 +7,6 @@ import time
 import trimesh
 from sklearn.neighbors import KDTree
 
-from utils import remove_useless_and_duplicated_points
-
 
 pred_dir = "samples/"
 gt_dir = "../../objs/"
