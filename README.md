@@ -11,7 +11,9 @@ If you find our work useful in your research, please consider citing our prior w
 	@article{chen2021nmc,
 	  title={Neural Marching Cubes},
 	  author={Zhiqin Chen and Hao Zhang},
-	  journal={arXiv preprint arXiv:2106.11272},
+	  journal={ACM Transactions on Graphics (Special Issue of SIGGRAPH Asia)},
+	  volume = {40},
+	  number = {6},
 	  year={2021}
 	}
 
