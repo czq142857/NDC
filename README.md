@@ -1,22 +1,21 @@
 # NDC
-PyTorch implementation of Neural Dual Contouring.
+PyTorch implementation for paper [Neural Dual Contouring](https://arxiv.org/abs/2202.01999), [Zhiqin Chen](https://czq142857.github.io/), [Andrea Tagliasacchi](https://taiya.github.io/), [Thomas Funkhouser](https://www.cs.princeton.edu/~funk/), [Hao Zhang](http://www.cs.sfu.ca/~haoz/). Note: this is a partial implementation. The full implementation will be released here after the paper is published.
+
+### [Paper](https://arxiv.org/abs/2202.01999)
 
 <img src='teaser.png' />
 
-
 ## Citation
-We are still writing the paper while adding more improvements and applications.
-If you find our work useful in your research, please consider citing our prior work [Neural Marching Cubes (NMC)](https://github.com/czq142857/NMC).
+If you find our work useful in your research, please consider citing:
 
-	@article{chen2021nmc,
-	  title={Neural Marching Cubes},
-	  author={Zhiqin Chen and Hao Zhang},
-	  journal={ACM Transactions on Graphics (Special Issue of SIGGRAPH Asia)},
-	  volume = {40},
-	  number = {6},
-	  year={2021}
+	@misc{chen2022ndc,
+	  title={Neural Dual Contouring}, 
+	  author={Zhiqin Chen and Andrea Tagliasacchi and Thomas Funkhouser and Hao Zhang},
+	  year={2022},
+	  eprint={2202.01999},
+	  archivePrefix={arXiv},
+	  primaryClass={cs.CV}
 	}
-
 
 
 
