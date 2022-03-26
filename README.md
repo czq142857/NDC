@@ -1,7 +1,7 @@
 # NDC
 PyTorch implementation for paper [Neural Dual Contouring](https://arxiv.org/abs/2202.01999), [Zhiqin Chen](https://czq142857.github.io/), [Andrea Tagliasacchi](https://taiya.github.io/), [Thomas Funkhouser](https://www.cs.princeton.edu/~funk/), [Hao Zhang](http://www.cs.sfu.ca/~haoz/).
 
-### [Paper](https://arxiv.org/abs/2202.01999)  |   [Video](https://youtu.be/AVx3V9sXOww)
+### [Paper](https://arxiv.org/abs/2202.01999)
 
 <img src='teaser.png' />
 
