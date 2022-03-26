@@ -24,8 +24,8 @@ import cutils
 # 64            512         64
 # 32            256         32
 
-# each grid cell has 1 + 3 = 4 values, without repetition
-# 1 cube corner V (int)
+# each grid cell has 3 + 3 = 6 values, without repetition
+# 3 cube edge flags (int)
 # 1 cube internal P (float)
 
 
@@ -35,8 +35,10 @@ def get_gt_from_intersectionpn(q, name_list):
 
     cell_voxel_size = 8
 
-    num_of_int_params = 1
+    num_of_int_params = 3
     num_of_float_params = 3
+
+    point_sample_num = 65536
 
     grid_size_list = [32,64]
     LOD_gt_int = {}
@@ -79,6 +81,10 @@ def get_gt_from_intersectionpn(q, name_list):
 
 
         #read
+        gt_mesh = trimesh.load(in_obj_name)
+        gt_points = gt_mesh.sample(point_sample_num, return_index=False)
+        np.random.shuffle(gt_points)
+
         sdf_129 = utils.read_sdf_file_as_3d_array(in_sdf_name) #128
 
         inter_X, inter_Y, inter_Z = utils.read_intersectionpn_file_as_2d_array(in_intersection_name) #128
@@ -124,17 +130,20 @@ def get_gt_from_intersectionpn(q, name_list):
 
 
             # ----- get_gt -----
-            tmp_sign = (tmp_sdf<=0).astype(np.uint8)
-            LOD_gt_tmp_int[:,:,:,0] = tmp_sign
             for i in range(grid_size):
                 for j in range(grid_size):
                     for k in range(grid_size):
-                        if np.max(tmp_sign[i:i+2,j:j+2,k:k+2])!=np.min(tmp_sign[i:i+2,j:j+2,k:k+2]):
-                        
                             reference_V = np.zeros([256,6], np.float32)
                             reference_V_len = cutils.retrieve_intersection_points_normals_from_cells(grid_size_1, LOD_intersection_pointer, LOD_intersection_data, i,j,k, reference_V)
-                            if reference_V_len==0: #no idea why this happens
+                            if reference_V_len==0: #empty
                                 continue
+                            
+                            if np.any( (reference_V[:reference_V_len,1]==0) & (reference_V[:reference_V_len,2]==0) ):
+                                LOD_gt_tmp_int[i,j,k,0] = 1
+                            if np.any( (reference_V[:reference_V_len,0]==0) & (reference_V[:reference_V_len,2]==0) ):
+                                LOD_gt_tmp_int[i,j,k,1] = 1
+                            if np.any( (reference_V[:reference_V_len,0]==0) & (reference_V[:reference_V_len,1]==0) ):
+                                LOD_gt_tmp_int[i,j,k,2] = 1
                             
                             #prepare a(?,3) b(?)
                             #n(x-p)=0 --> nx=np
@@ -207,8 +216,10 @@ def get_gt_from_intersectionpn(q, name_list):
 
             #print(time.time() - start_time)
 
-            #vertices, triangles = utils.dual_contouring_ndc_test(LOD_gt_int[grid_size][:,:,:,:], LOD_gt_float[grid_size][:,:,:,:])
+            #vertices, triangles = utils.dual_contouring_undc_test(LOD_gt_int[grid_size][:,:,:,:], LOD_gt_float[grid_size][:,:,:,:])
+            #vertices = vertices/grid_size-0.5
             #utils.write_obj_triangle(out_name+"_"+str(grid_size)+".obj", vertices, triangles)
+            #utils.write_ply_point(out_name+"_"+str(grid_size)+".ply", gt_points)
 
             #os.system("cp "+in_obj_name+" "+out_name+"_x.obj")
             #tmp_pc = np.concatenate([LOD_inter_X,LOD_inter_Y,LOD_inter_Z], axis=0)
@@ -217,6 +228,8 @@ def get_gt_from_intersectionpn(q, name_list):
         
         #record data
         hdf5_file = h5py.File(out_hdf5_name, 'w')
+        hdf5_file.create_dataset("pointcloud", [point_sample_num,3], np.float32, compression=9)
+        hdf5_file["pointcloud"][:] = gt_points
         for grid_size in grid_size_list:
             grid_size_1 = grid_size+1
             hdf5_file.create_dataset(str(grid_size)+"_int", [grid_size_1,grid_size_1,grid_size_1,num_of_int_params], np.uint8, compression=9)
@@ -235,6 +248,8 @@ def get_gt_from_intersectionpn(q, name_list):
         os.remove(in_intersection_name)
         os.remove(in_binvox_name)
 
+        del voxel_1025
+
 
         q.put([1,pid,idx])
 
@@ -248,7 +263,7 @@ if __name__ == '__main__':
         print("ERROR: this dir does not exist: "+target_dir)
         exit()
 
-    write_dir = "./gt_NDC/"
+    write_dir = "./gt_UNDC/"
     if not os.path.exists(write_dir):
         os.makedirs(write_dir)
 
@@ -265,7 +280,7 @@ if __name__ == '__main__':
 
 
     #prepare list of names
-    even_distribution = [16]
+    even_distribution = [20]
     this_machine_id = 0
     num_of_process = 0
     P_start = 0

@@ -8,10 +8,8 @@ import trimesh
 from sklearn.neighbors import KDTree
 
 
-
 pred_dir = "samples/"
 gt_dir = "../../objs/"
-
 
 def load_obj(dire):
     fin = open(dire,'r')
@@ -57,9 +55,36 @@ def get_v_t_count(q, name_list):
         #load gt
         #load pred
         v,t = load_obj(pred_obj_name)
+        
+        slot = np.zeros([180],np.int32)
 
-        print(idx,len(v),len(t))
-        q.put([idx,len(v),len(t)])
+        for i in range(len(t)):
+            for j in range(3):
+                v1i = t[i,(j)%3]
+                v2i = t[i,(j+1)%3]
+                v3i = t[i,(j+2)%3]
+                
+                v1 = v[v1i]
+                v2 = v[v2i]
+                v3 = v[v3i]
+
+                v12 = v2-v1
+                v13 = v3-v1
+
+                s_a = np.sqrt( np.sum(v12*v12)*np.sum(v13*v13) )
+                if s_a<1e-10:
+                    s_a = 1e-10
+                cos_a = np.sum(v12*v13)/s_a
+                if cos_a>1: cos_a=1
+                if cos_a<-1: cos_a=-1
+                a = (np.arccos(cos_a)/np.pi*180).astype(np.int32)
+                if a>=180:
+                    a = 180-1
+                slot[a] += 1
+
+
+        print(idx)
+        q.put([idx,slot])
 
 
 if __name__ == '__main__':
@@ -71,8 +96,7 @@ if __name__ == '__main__':
 
     obj_names_len = len(obj_names)
 
-    numbers_v_count = np.zeros([obj_names_len],np.float32)
-    numbers_t_count = np.zeros([obj_names_len],np.float32)
+    slots_180 = np.zeros([180],np.int32)
 
 
     #prepare list of names
@@ -102,15 +126,14 @@ if __name__ == '__main__':
     while True:
         item_flag = True
         try:
-            idx,v_count,t_count = q.get(True, 1.0)
+            idx, slot = q.get(True, 1.0)
         except queue.Empty:
             item_flag = False
         
         if item_flag:
             #process result
+            slots_180 = slots_180 + slot
             counter += 1
-            numbers_v_count[idx] = v_count
-            numbers_t_count[idx] = t_count
 
         allExited = True
         for p in workers:
@@ -122,10 +145,20 @@ if __name__ == '__main__':
 
     if counter!=obj_names_len:
         print("ERROR: counter!=obj_names_len")
-        exit(-1)
+        print(counter,obj_names_len)
 
-    fout = open("result_counts.txt", 'w')
-    fout.write(str(np.mean(numbers_v_count))+"\t"+str(np.mean(numbers_t_count))+"\n")
+    #accumulate, percentage
+    acc = 0
+    for idx in range(180):
+        acc += slots_180[idx]
+        slots_180[idx] = acc
+    slots_180 = slots_180.astype(np.float32)/acc
+
+
+    fout = open("result_tri_angle.txt", 'w')
+    for idx in range(180):
+        fout.write(str(slots_180[idx])+"\n")
+    fout.close()
 
     print("finished")
 

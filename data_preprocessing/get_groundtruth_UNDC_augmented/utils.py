@@ -2,12 +2,11 @@ import numpy as np
 
 
 #this is not an efficient implementation. just for testing!
-def dual_contouring_ndc_test(int_grid, float_grid):
+def dual_contouring_undc_test(int_grid, float_grid):
     all_vertices = []
     all_triangles = []
 
-    int_grid = np.squeeze(int_grid)
-    dimx,dimy,dimz = int_grid.shape
+    dimx,dimy,dimz,_ = int_grid.shape
     vertices_grid = np.full([dimx,dimy,dimz], -1, np.int32)
 
     #all vertices
@@ -15,16 +14,22 @@ def dual_contouring_ndc_test(int_grid, float_grid):
         for j in range(0,dimy-1):
             for k in range(0,dimz-1):
             
-                v0 = int_grid[i,j,k]
-                v1 = int_grid[i+1,j,k]
-                v2 = int_grid[i+1,j+1,k]
-                v3 = int_grid[i,j+1,k]
-                v4 = int_grid[i,j,k+1]
-                v5 = int_grid[i+1,j,k+1]
-                v6 = int_grid[i+1,j+1,k+1]
-                v7 = int_grid[i,j+1,k+1]
+                ex0 = int_grid[i,j,k,0]
+                ex1 = int_grid[i,j+1,k,0]
+                ex2 = int_grid[i,j+1,k+1,0]
+                ex3 = int_grid[i,j,k+1,0]
+
+                ey0 = int_grid[i,j,k,1]
+                ey1 = int_grid[i+1,j,k,1]
+                ey2 = int_grid[i+1,j,k+1,1]
+                ey3 = int_grid[i,j,k+1,1]
+
+                ez0 = int_grid[i,j,k,2]
+                ez1 = int_grid[i+1,j,k,2]
+                ez2 = int_grid[i+1,j+1,k,2]
+                ez3 = int_grid[i,j+1,k,2]
                 
-                if v1!=v0 or v2!=v0 or v3!=v0 or v4!=v0 or v5!=v0 or v6!=v0 or v7!=v0:
+                if ex0 or ex1 or ex2 or ex3 or ey0 or ey1 or ey2 or ey3 or ez0 or ez1 or ez2 or ez3:
                     #add a vertex
                     vertices_grid[i,j,k] = len(all_vertices)
                     pos = float_grid[i,j,k]+np.array([i,j,k], np.float32)
@@ -39,43 +44,25 @@ def dual_contouring_ndc_test(int_grid, float_grid):
     for i in range(0,dimx-1):
         for j in range(1,dimy-1):
             for k in range(1,dimz-1):
-                v0 = int_grid[i,j,k]
-                v1 = int_grid[i+1,j,k]
-                if v0!=v1:
-                    if v0==0:
-                        all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j,k],vertices_grid[i,j,k-1]])
-                        all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j-1,k],vertices_grid[i,j,k]])
-                    else:
-                        all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j,k-1],vertices_grid[i,j,k]])
-                        all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j,k],vertices_grid[i,j-1,k]])
+                if int_grid[i,j,k,0]:
+                    all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j,k-1],vertices_grid[i,j,k]])
+                    all_triangles.append([vertices_grid[i,j-1,k-1],vertices_grid[i,j,k],vertices_grid[i,j-1,k]])
 
     #j-direction
     for i in range(1,dimx-1):
         for j in range(0,dimy-1):
             for k in range(1,dimz-1):
-                v0 = int_grid[i,j,k]
-                v1 = int_grid[i,j+1,k]
-                if v0!=v1:
-                    if v0==0:
-                        all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i,j,k-1],vertices_grid[i,j,k]])
-                        all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i,j,k],vertices_grid[i-1,j,k]])
-                    else:
-                        all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i,j,k],vertices_grid[i,j,k-1]])
-                        all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i-1,j,k],vertices_grid[i,j,k]])
+                if int_grid[i,j,k,1]:
+                    all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i,j,k],vertices_grid[i,j,k-1]])
+                    all_triangles.append([vertices_grid[i-1,j,k-1],vertices_grid[i-1,j,k],vertices_grid[i,j,k]])
 
     #k-direction
     for i in range(1,dimx-1):
         for j in range(1,dimy-1):
             for k in range(0,dimz-1):
-                v0 = int_grid[i,j,k]
-                v1 = int_grid[i,j,k+1]
-                if v0!=v1:
-                    if v0==0:
-                        all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i-1,j,k],vertices_grid[i,j,k]])
-                        all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i,j,k],vertices_grid[i,j-1,k]])
-                    else:
-                        all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i,j,k],vertices_grid[i-1,j,k]])
-                        all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i,j-1,k],vertices_grid[i,j,k]])
+                if int_grid[i,j,k,2]:
+                    all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i,j,k],vertices_grid[i-1,j,k]])
+                    all_triangles.append([vertices_grid[i-1,j-1,k],vertices_grid[i,j-1,k],vertices_grid[i,j,k]])
 
     all_triangles = np.array(all_triangles, np.int32)
 
@@ -206,3 +193,5 @@ def read_binvox_file_as_3d_array(name,fix_coords=True):
     data = np.ascontiguousarray(data, np.uint8)
     fp.close()
     return data
+
+
