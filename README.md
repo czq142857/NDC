@@ -8,13 +8,13 @@ PyTorch implementation for paper [Neural Dual Contouring](https://arxiv.org/abs/
 ## Citation
 If you find our work useful in your research, please consider citing:
 
-	@misc{chen2022ndc,
+	@article{chen2022ndc,
 	  title={Neural Dual Contouring}, 
 	  author={Zhiqin Chen and Andrea Tagliasacchi and Thomas Funkhouser and Hao Zhang},
-	  year={2022},
-	  eprint={2202.01999},
-	  archivePrefix={arXiv},
-	  primaryClass={cs.CV}
+	  journal={ACM Transactions on Graphics (Special Issue of SIGGRAPH)},
+	  volume = {41},
+	  number = {4},
+	  year={2022}
 	}
 
 
