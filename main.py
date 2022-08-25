@@ -187,7 +187,7 @@ if is_training:
                     acc_bool = torch.sum(( gt_output_bool*(pred_output_bool>0.5).float() + (1-gt_output_bool)*(pred_output_bool<=0.5).float() )*gt_output_bool_mask)/torch.clamp(bool_mask_sum,min=1)
                     
                     loss = loss_bool
-                    avg_acc_bool += acc_bool.data
+                    avg_acc_bool += acc_bool.item()
                     avg_acc_bool_count += 1
 
                 if net_float:
@@ -205,7 +205,7 @@ if is_training:
                     loss_float = torch.sum(( (pred_output_float-gt_output_float)**2 )*gt_output_float_mask)/torch.clamp(torch.sum(gt_output_float_mask),min=1)
 
                     loss = loss_float
-                    avg_acc_float += loss_float.data
+                    avg_acc_float += loss_float.item()
                     avg_acc_float_count += 1
 
             elif FLAGS.input_type == "pointcloud" or FLAGS.input_type == "noisypc":
@@ -229,7 +229,7 @@ if is_training:
                     acc_bool = torch.mean( gt_output_bool*(pred_output_bool>0.5).float() + (1-gt_output_bool)*(pred_output_bool<=0.5).float() )
 
                     loss = loss_bool
-                    avg_acc_bool += acc_bool.data
+                    avg_acc_bool += acc_bool.item()
                     avg_acc_bool_count += 1
 
                 elif net_float:
@@ -251,11 +251,11 @@ if is_training:
                     loss_float = torch.sum(( (pred_output_float-gt_output_float)**2 )*gt_output_float_mask )/torch.clamp(torch.sum(gt_output_float_mask),min=1)
 
                     loss = loss_float
-                    avg_acc_float += loss_float.data
+                    avg_acc_float += loss_float.item()
                     avg_acc_float_count += 1
 
 
-            avg_loss += loss.data
+            avg_loss += loss.item()
             avg_loss_count += 1
 
             loss.backward()
