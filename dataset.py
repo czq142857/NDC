@@ -137,7 +137,7 @@ class ABC_grid_hdf5(torch.utils.data.Dataset):
             elif not self.out_bool:
                 valid_flag = np.max(gt_output_float_mask_,axis=0)
             else:
-                valid_flag = gt_output_bool_mask_[0] | np.max(gt_output_float_mask_,axis=0)
+                valid_flag = np.maximum(gt_output_bool_mask_[0],np.max(gt_output_float_mask_,axis=0))
 
             #x
             ray = np.max(valid_flag,(1,2))
